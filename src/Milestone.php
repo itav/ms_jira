@@ -23,6 +23,10 @@ class Milestone
      * @var string
      */
     private $description;
+    /**
+     * @var string
+     */
+    private $released;
 
     /**
      * @return int
@@ -77,4 +81,23 @@ class Milestone
         $this->description = $description;
         return $this;
     }
+
+    /**
+     * @return string
+     */
+    public function getReleased(): string
+    {
+        return $this->released;
+    }
+
+    /**
+     * @param string $released
+     * @return Milestone
+     */
+    public function setReleased(string $released): Milestone
+    {
+        $this->released = $released;
+        return $this;
+    }
+
 }
