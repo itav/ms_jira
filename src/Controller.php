@@ -6,12 +6,13 @@ use GuzzleHttp\Client;
 use Itav\Component\Serializer\Serializer;
 use Silex\Application;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 
 class Controller
 {
-    const JIRA_MAIN_URL = 'https://sylwester7799.atlassian.net';
-    private $jiraProjectKey = 'PM';
-    private $jiraPriorityKey = 'High';
+    const JIRA_MAIN_URL = 'https://encjacom.atlassian.net';
+    private $jiraProjectKey = 'IPRESSO';
+    private $jiraPriorityKey = 'Standard';
 
     /**
      * @var \GuzzleHttp\Client
@@ -32,26 +33,26 @@ class Controller
         $res = $this->client->get($key, ['auth' => $this->auth]);
 
         $code = $res->getStatusCode();
+        if(!in_array($code, [200,201])){
+            return $app->json([]);
+        }
         $content = $res->getBody()->getContents();
 
         $ms = $this->serializer->denormalize(json_decode($content, true), Milestone::class . '[]');
         $milestones = array_filter($ms, function (Milestone $item) {
             return $item->getReleased() ? false : true;
         });
-        print_r($milestones);
         $projects = [];
         /** @var Milestone[] $milestones */
         foreach ($milestones as $milestone) {
             $ver = $milestone->getName();
             $tasks = $this->getTasks($ver);
-            print_r($milestone);
 //            array_walk($tasks, function (Task $item, Milestone $milestone) {
 //                $item->setParent((!$item->getParent()) ?: $milestone->getId());
 //            });
             $projects[$milestone->getId()] = $tasks;
         }
-        print_r($projects);
-        return '';
+        return $app->json($this->serializer->normalize($projects));
     }
 
     public function getTasks($ver)
